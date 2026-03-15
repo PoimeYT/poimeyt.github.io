@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>jumpscare</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+      background-color: #0a0a0a;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* creepy background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,0,0,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,0,0,0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+      animation: gridPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes gridPulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 3rem 2rem;
+      animation: containerIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes containerIn {
+      from { opacity: 0; transform: scale(0.5) rotate(-5deg); }
+      to   { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
+    .title {
+      font-size: clamp(2rem, 7vw, 4.5rem);
+      font-weight: bold;
+      color: #ff2222;
+      text-shadow:
+        3px 3px 0 #000,
+        0 0 30px rgba(255,34,34,0.8),
+        0 0 60px rgba(255,34,34,0.4);
+      margin-bottom: 2.5rem;
+      letter-spacing: 2px;
+      animation: flicker 2.5s infinite;
+    }
+
+    @keyframes flicker {
+      0%, 95%, 100% { opacity: 1; text-shadow: 3px 3px 0 #000, 0 0 30px rgba(255,34,34,0.8), 0 0 60px rgba(255,34,34,0.4); }
+      96%            { opacity: 0.4; text-shadow: none; }
+      97%            { opacity: 1; }
+      98%            { opacity: 0.6; }
+    }
+
+    .skin-wrapper {
+      display: inline-block;
+      position: relative;
+      margin-top: 0.5rem;
+    }
+
+    /* glowing red border around the skin */
+    .skin-wrapper::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border: 3px solid #ff2222;
+      box-shadow:
+        0 0 15px #ff2222,
+        0 0 40px rgba(255,34,34,0.5),
+        inset 0 0 15px rgba(255,34,34,0.1);
+      animation: borderPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes borderPulse {
+      0%, 100% { box-shadow: 0 0 15px #ff2222, 0 0 40px rgba(255,34,34,0.5), inset 0 0 15px rgba(255,34,34,0.1); }
+      50%       { box-shadow: 0 0 30px #ff2222, 0 0 80px rgba(255,34,34,0.8), inset 0 0 30px rgba(255,34,34,0.2); }
+    }
+
+    .skin-face {
+      display: block;
+      width: 160px;
+      height: 160px;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      animation: shakeIn 0.8s 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both, shake 6s 2s ease-in-out infinite;
+    }
+
+    @keyframes shakeIn {
+      from { opacity: 0; transform: scale(3) rotate(20deg); }
+      to   { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
+    @keyframes shake {
+      0%, 90%, 100% { transform: rotate(0deg); }
+      91%            { transform: rotate(-4deg) scale(1.05); }
+      93%            { transform: rotate(4deg) scale(1.05); }
+      95%            { transform: rotate(-3deg); }
+      97%            { transform: rotate(3deg); }
+      99%            { transform: rotate(-1deg); }
+    }
+
+    .error-msg {
+      font-size: 1.2rem;
+      color: #ff6666;
+      text-shadow: 1px 1px 0 #000;
+      animation: containerIn 0.5s both;
+    }
+
+    .loading-msg {
+      font-size: 1.4rem;
+      color: #aaa;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <div class="loading-msg">loading...</div>
+  </div>
+
+  <script>
+    const app = document.getElementById('app');
+
+    function getUUID() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('uuid');
+    }
+
+    function stripDashes(uuid) {
+      return uuid.replace(/-/g, '');
+    }
+
+    async function getProfile(uuid) {
+      // use the minetools api as a proxy to avoid cors issues
+      const clean = stripDashes(uuid);
+      const res = await fetch(`https://playerdb.co/api/player/minecraft/${clean}`);
+      if (!res.ok) throw new Error('player not found');
+      const data = await res.json();
+      if (!data.success) throw new Error('player not found');
+      return {
+        username: data.data.player.username,
+        uuid: data.data.player.raw_id
+      };
+    }
+
+    function getSkinFaceUrl(uuid) {
+      // crafatar serves the face of the skin (8x8 face + hat layer) as a png
+      const clean = stripDashes(uuid);
+      return `https://crafatar.com/avatars/${clean}?size=160&overlay=true`;
+    }
+
+    async function init() {
+      const uuid = getUUID();
+
+      if (!uuid) {
+        app.innerHTML = `<div class="error-msg">❌ no uuid in the url!<br><br>try: <code>?uuid=your-uuid-here</code></div>`;
+        return;
+      }
+
+      try {
+        const profile = await getProfile(uuid);
+        const faceUrl = getSkinFaceUrl(profile.uuid);
+
+        app.innerHTML = `
+          <div class="title">get jumpscared ${profile.username}</div>
+          <div class="skin-wrapper">
+            <img class="skin-face" src="${faceUrl}" alt="${profile.username}'s face" />
+          </div>
+        `;
+      } catch (e) {
+        app.innerHTML = `<div class="error-msg">❌ couldn't find that player!<br><br>make sure the uuid is correct.</div>`;
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
