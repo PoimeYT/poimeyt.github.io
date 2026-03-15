@@ -169,11 +169,9 @@
     }
 
     function getSkinFaceUrl(uuid) {
-      // crafatar serves the face of the skin (8x8 face + hat layer) as a png
       const clean = stripDashes(uuid);
-      return `https://crafatar.com/avatars/${clean}?size=160&overlay=true`;
+      return `https://minotar.net/avatar/${clean}/160`;
     }
-
     async function init() {
       const uuid = getUUID();
 
