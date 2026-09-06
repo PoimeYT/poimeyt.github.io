@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Popcorn — Privacy Policy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #17131c;
+    --surface: #1e1922;
+    --text: #e9e2ef;
+    --muted: #ab9cb8;
+    --gold: #f0a83a;
+    --line: rgba(240,168,58,0.16);
+    --border: rgba(233,226,239,0.10);
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f1ea;
+      --surface: #fffdf9;
+      --text: #241d29;
+      --muted: #6d5f77;
+      --gold: #b9791f;
+      --line: rgba(185,121,31,0.22);
+      --border: rgba(36,29,41,0.12);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.65 Figtree, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 56px 24px 96px; }
+  header { border-bottom: 1px solid var(--line); padding-bottom: 24px; margin-bottom: 8px; }
+  h1 {
+    font: 400 44px/1.05 Anton, Figtree, sans-serif;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 8px;
+  }
+  .updated { color: var(--muted); font-size: 14px; margin: 0; }
+  h2 {
+    font: 400 15px/1.3 Anton, Figtree, sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 44px 0 14px;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 28px 0 8px;
+  }
+  p { margin: 0 0 14px; }
+  a { color: var(--gold); }
+  ul { margin: 0 0 14px; padding-left: 22px; }
+  li { margin: 6px 0; }
+  code {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.88em;
+  }
+  em { color: var(--muted); font-style: italic; }
+  .lead {
+    font-size: 17px;
+    color: var(--text);
+  }
+  .table-scroll { overflow-x: auto; margin: 0 0 14px; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 520px;
+    font-size: 14.5px;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--muted); font-weight: 600; }
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin: 0 0 14px;
+  }
+  .callout ul { margin-bottom: 0; }
+  footer {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Popcorn — Privacy Policy</h1>
+  <p class="updated">Last updated: 6 September 2026</p>
+</header>
+
+<p class="lead">Popcorn is a watch-together app for the <a href="https://rootapp.com">Root</a> platform. You open it inside a Root channel, load a video, and playback, a member list, and chat stay in sync for everyone in the room.</p>
+
+<p>This policy explains what data Popcorn handles and where it goes. It is written to be read, not to cover a lawyer in glory — if anything here is unclear, ask (see <a href="#contact">Contact</a>).</p>
+
+<h2>The short version</h2>
+<div class="callout">
+<ul>
+  <li>Popcorn has <strong>no accounts, no passwords, no payment, no advertising, and no analytics or tracking</strong>.</li>
+  <li>The only personal data it uses is the <strong>identity Root already gives it</strong> (your user ID and display name, and the channel ID) — to show who's watching, attribute chat messages, and decide who's host.</li>
+  <li>Your <strong>room's state</strong> — the current video, playback position, room settings, and the <strong>last 50 chat messages</strong> — is stored as a single record for your channel so people can rejoin where things left off.</li>
+  <li>If you choose to link a <strong>Stremio account</strong>, your Stremio key stays in <strong>your own browser</strong> and is <strong>never stored on Popcorn's servers</strong>.</li>
+  <li>Popcorn <strong>does not host or provide video</strong>. It plays streams from sources you point it at (a Stremio account, Stremio addons, a YouTube link, or a direct video URL), and those third parties receive requests directly.</li>
+</ul>
+</div>
+
+<h2>What Popcorn is</h2>
+<p>Popcorn is a <strong>synchronization layer</strong>. It coordinates playback and chat between people who are already in the same Root channel. It does not host, upload, store, provide, or endorse any video content — what you watch, and where it comes from, is chosen and controlled by the people in the room. A one-time notice on first launch says the same thing.</p>
+
+<h2>Data Popcorn handles</h2>
+
+<h3>Your Root identity</h3>
+<p>When you open Popcorn in a channel, Root tells the Popcorn server your <strong>user ID</strong>, your <strong>display name</strong>, and the <strong>channel (room) ID</strong>. Popcorn uses this to:</p>
+<ul>
+  <li>show you in the <strong>"Watching"</strong> list while you're connected,</li>
+  <li>attribute your <strong>chat messages</strong>, and</li>
+  <li>assign and transfer the <strong>host</strong> role.</li>
+</ul>
+<p>Popcorn does not receive your email address, password, payment details, or any Root profile data beyond the above.</p>
+
+<h3>Your room's state</h3>
+<p>Popcorn keeps one small record per channel so the room survives people leaving and rejoining. It contains:</p>
+<ul>
+  <li>the <strong>current video</strong> reference (a URL or content ID) and its playback state (playing/paused, position, speed),</li>
+  <li><strong>room settings</strong> (e.g. host-only playback),</li>
+  <li>the <strong>last 50 chat messages</strong> (older messages are discarded — this is a rejoin backfill, not a chat archive), and</li>
+  <li>if a Stremio account is linked, the <strong>public addon and catalog URLs</strong> derived from it (see below) and the user ID of whoever linked it.</li>
+</ul>
+<p>This record is stored in the Root platform's per-app data store, scoped to your channel. It is overwritten as the room changes (new video, new settings, newer chat) and is not shared with other channels.</p>
+
+<h3>Live presence</h3>
+<p>Who is currently connected is held <strong>in memory only</strong> while people are online and is rebuilt from scratch each session. It is not written to storage.</p>
+
+<h3>Stremio account linking (optional)</h3>
+<p>If the room host links a Stremio account, the host pastes their Stremio <strong>authKey</strong>. Popcorn's handling of it is deliberately narrow:</p>
+<ul>
+  <li>The authKey is kept in <strong>the host's own browser</strong> (<code>localStorage</code>) and is sent to the Popcorn server <strong>only</strong> at the moment of linking.</li>
+  <li>The server uses it to make <strong>two calls to <code>api.strem.io</code></strong> — one to validate the account, one to read the list of installed addons — and then <strong>discards it</strong>. It is <strong>never written to disk and never logged</strong>.</li>
+  <li>Only the <strong>public</strong> addon and catalog URLs derived from that list are stored in the room record. Every request after linking (browsing catalogs, resolving streams) goes to those public addon endpoints and carries <strong>no authKey</strong>.</li>
+</ul>
+
+<h3>Data stored in your browser</h3>
+<p>Popcorn uses your browser's local storage for:</p>
+<ul>
+  <li>a flag recording that you <strong>acknowledged the first-launch notice</strong>,</li>
+  <li>your <strong>saved list of Stremio addon URLs</strong> (manual, no-login mode), and</li>
+  <li>the <strong>Stremio authKey</strong>, if you linked an account (as above).</li>
+</ul>
+<p>This data stays in your browser. Clearing your browser data removes it.</p>
+
+<h2>What Popcorn does not do</h2>
+<ul>
+  <li>No user accounts, logins, or passwords.</li>
+  <li>No payment or financial data.</li>
+  <li>No advertising, no ad networks, no marketing.</li>
+  <li>No analytics, no usage tracking, no cookies for tracking, no fingerprinting.</li>
+  <li>No selling, renting, or sharing of data with data brokers.</li>
+  <li>No access to your camera, microphone, files, or location.</li>
+  <li>No profile of you across channels, sessions, or other sites.</li>
+</ul>
+
+<h2>Where data goes (third parties)</h2>
+<p>Popcorn is a small app that stands between you and services you choose. Those services have their own privacy policies, which govern what they do with data they receive.</p>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Service</th><th>What it receives</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Root</strong></td><td>Hosts the Popcorn client and server; all client↔server traffic is routed through Root's infrastructure, including in local development.</td><td>Popcorn runs on Root.</td></tr>
+    <tr><td><strong>Stremio (<code>api.strem.io</code>)</strong></td><td>Your Stremio authKey, once, at link time (from Popcorn's server).</td><td>Validate the account and read its addon list.</td></tr>
+    <tr><td><strong>Stremio addons you configure</strong></td><td>Requests for catalogs, metadata, and stream URLs — <strong>no authKey</strong>. Your IP address, as with any HTTP request.</td><td>Resolve something playable for the room.</td></tr>
+    <tr><td><strong>YouTube / Google</strong></td><td>If you load a YouTube video, your browser loads YouTube's player and connects to Google. Google Fonts is also loaded for typography.</td><td>Play YouTube sources; render the app's fonts.</td></tr>
+    <tr><td><strong>A direct video URL's host</strong></td><td>If you paste a direct video link, your browser connects to that host to play it.</td><td>Play the video.</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Popcorn itself does not operate its own analytics, logging, or storage outside the Root platform data store described above.</p>
+
+<h2>Retention</h2>
+<ul>
+  <li><strong>Room record:</strong> persists in the channel's storage until it is overwritten by newer room activity or removed. Chat within it is always capped at the last 50 messages.</li>
+  <li><strong>Live presence:</strong> exists only while you're connected; discarded immediately on disconnect.</li>
+  <li><strong>Stremio authKey:</strong> never retained on Popcorn's servers. Retained in your own browser until you clear it.</li>
+  <li><strong>Browser storage:</strong> retained until you clear your browser data.</li>
+</ul>
+
+<h2>Children</h2>
+<p>Popcorn is a general-audience app and is not directed to children under 13 (or the equivalent minimum age in your jurisdiction). It does not knowingly collect personal information from children.</p>
+
+<h2>Security</h2>
+<p>Popcorn minimizes what it holds: no passwords, no payment data, and no server-side storage of the Stremio authKey. Data in transit between the client and server is handled by the Root platform. No method of storage or transmission is perfectly secure, and Popcorn cannot guarantee absolute security.</p>
+
+<h2>Changes to this policy</h2>
+<p>If this policy changes, the "Last updated" date at the top will change. Material changes will be noted in the app's release notes.</p>
+
+<h2 id="contact">Contact</h2>
+<p>Questions about this policy or your data:</p>
+<ul>
+  <li><strong>Email:</strong> <em>add a support email here before publishing</em></li>
+  <li><strong>Issues:</strong> <em>add your public issue tracker URL here, if you have one</em></li>
+</ul>
+
+<footer>
+  Popcorn is an independent app for the Root platform and is not affiliated with Stremio, YouTube, or Google.
+</footer>
+</div>
+</body>
+</html>
