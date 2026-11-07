@@ -239,6 +239,7 @@
     gap: 16px;
     transition: border-color 0.2s;
   }
+  a.project-card { text-decoration: none; color: inherit; }
   .project-card:hover { border-color: var(--border2); }
   .project-name {
     font-size: 14px;
@@ -491,6 +492,13 @@
   <section id="projects">
     <div class="section-label">projects</div>
     <div class="projects-list fade-in d2">
+      <a class="project-card" href="https://github.com/PoimeYT/hd60pro-linux" target="_blank" rel="noopener">
+        <div>
+          <div class="project-name">hd60pro-linux</div>
+          <div class="project-desc">a reverse-engineered linux driver for the elgato hd60 pro capture card. 1080p60 video into a v4l2 camera for obs, hdmi audio into pipewire, and working hdmi out passthrough — all running in userspace through vfio.</div>
+        </div>
+        <span class="project-badge">c · linux</span>
+      </a>
       <div class="project-soon">more projects coming soon — stay tuned :)</div>
     </div>
   </section>
