@@ -223,6 +223,25 @@ button,select{font:inherit;color:inherit}
   let LT = { chests: 0, wins: 0, best: null, worst: null };
   try { const x = JSON.parse(localStorage.getItem('chestspam_v1') || 'null'); if (x) LT = Object.assign(LT, x); } catch (e) {}
   const save = () => { try { localStorage.setItem('chestspam_v1', JSON.stringify(LT)); } catch (e) {} };
+  // ---- save / restore the current run in the browser
+  const RUN_KEY = 'chestspam_run_v1';
+  function saveRun(won) {
+    try {
+      localStorage.setItem(RUN_KEY, JSON.stringify({
+        opened: S.opened, elapsed: S.t0 ? Date.now() - S.t0 : 0, inv: S.inv, won: !!won }));
+    } catch (e) {}
+  }
+  function clearRun() { try { localStorage.removeItem(RUN_KEY); } catch (e) {} }
+  function loadRun() {
+    try {
+      const r = JSON.parse(localStorage.getItem(RUN_KEY) || 'null');
+      if (!r || !(r.opened >= 0) || !r.inv || typeof r.inv.items !== 'object') return;
+      S.opened = Math.floor(r.opened);
+      S.t0 = r.elapsed > 0 ? Date.now() - r.elapsed : 0;
+      S.inv = Object.assign(newInv(), r.inv);
+      if (r.won) win();                       // closed the tab mid-win: replay the win
+    } catch (e) {}
+  }
 
   // random numbers, buffered
   const buf = new Uint32Array(16384); let bi = buf.length;
@@ -337,10 +356,12 @@ button,select{font:inherit;color:inherit}
     if (special) { beep(880, 0.12, 'triangle', 0.04); beep(1175, 0.18, 'triangle', 0.04, 0.1); }
     else beep(380 + Math.random() * 120, 0.06);
     render();
+    saveRun(); save();
   }
 
   function win() {
     S.locked = true; holdCancel();
+    saveRun(true); save();
     const chest = $('chest');
     chest.classList.add('charging');
     [300, 340, 380, 420, 480, 560, 660, 780].forEach((f, i) => beep(f, 0.25, 'triangle', 0.04, i * 0.25));
@@ -353,6 +374,7 @@ button,select{font:inherit;color:inherit}
       LT.best = LT.best === null ? S.opened : Math.min(LT.best, S.opened);
       LT.worst = LT.worst === null ? S.opened : Math.max(LT.worst, S.opened);
       save();
+      clearRun();
       const p = 1 - Math.pow(1 - P, S.opened);
       $('wChests').innerHTML = 'It took <b>' + fmt(S.opened) + '</b> chests in <b>' + $('sTime').textContent + '</b>.';
       $('wLuck').textContent = (S.opened / ODDS).toFixed(2) + 'x the average wait. ' + ((1 - p) * 100).toFixed(1) + '% of hunters would have taken longer.';
@@ -365,6 +387,7 @@ button,select{font:inherit;color:inherit}
 
   function resetRun() {
     S.opened = 0; S.t0 = 0; S.locked = false; S.log = []; S.inv = newInv();
+    clearRun();
     $('win').classList.add('hidden');
     $('chest').classList.remove('charging', 'isopen');
     render();
@@ -550,6 +573,7 @@ button,select{font:inherit;color:inherit}
 
   try { if (localStorage.getItem('chestspam_tap') === '1') setTapMode(true); } catch (e) {}
   buildHaul();
+  loadRun();
   render();
 })();
 </script>
