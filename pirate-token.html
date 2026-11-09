@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Chest Spam: Pirate Token Hunt</title>
+<title>Fortnite Pirate Token</title>
 <link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -117,8 +117,8 @@ button,select{font:inherit;color:inherit}
 <body>
 <main>
   <header>
-    <h1>Chest Spam</h1>
-    <p class="sub">free chests. no matches. hold to open, one second each, no shortcuts. one <b>1 in 137,000</b> shot at the pirate shop token.</p>
+    <h1>Fortnite Pirate Token</h1>
+    <p class="sub">free chests. no matches. hold to open (or tap, see below), one second each, no shortcuts. one <b>1 in 137,000</b> shot at the pirate shop token.</p>
   </header>
 
   <section class="stats" aria-label="stats">
@@ -164,6 +164,7 @@ button,select{font:inherit;color:inherit}
   </section>
 
   <section class="controls">
+    <button id="mode" title="For anyone who can't hold a button down: press once and the chest opens by itself after 1 second">Opening: hold</button>
     <button id="mute">Sound: on</button>
     <button id="reset">Reset run</button>
   </section>
@@ -184,7 +185,7 @@ button,select{font:inherit;color:inherit}
   <p class="note">Fan-made parody with fake, free chests. Not affiliated with or endorsed by Epic Games.<br>
   Every chest gives a weapon, a heal or shield item, materials and gold bars, like the real ones. Weapon and material odds are rough community numbers.<br>
   Epic has never published the real Pirate Shop Access drop rate; estimates range from about 1 in 2,000 to 1 in 700,000. This game uses 1 in 137,000.<br>
-  Chests take about a second to open in the real game (you hold interact), so that is how long they take here. One chest at a time, no auto-open, no bulk opening.<br>
+  Chests take about a second to open in the real game (you hold interact), so that is how long they take here. One chest at a time, no auto-open, no bulk opening. Can't hold a button? Switch "Opening" to tap once: you press once, the chest takes the same second, and you can't start another until it's done.<br>
   The 1% chance of a side reward per chest is a community estimate too, and the Solid Gold skins are treated as equally rare as the token.</p>
 </main>
 
@@ -218,7 +219,7 @@ button,select{font:inherit;color:inherit}
   const fmt = n => Math.round(n).toLocaleString('en-US');
 
   function newInv() { return { uncommon: 0, rare: 0, epic: 0, legendary: 0, bars: 0, wood: 0, stone: 0, metal: 0, items: {} }; }
-  const S = { inv: newInv(), opened: 0, t0: 0, locked: false, log: [] };
+  const S = { inv: newInv(), opened: 0, t0: 0, locked: false, log: [], tapMode: false };
   let LT = { chests: 0, wins: 0, best: null, worst: null };
   try { const x = JSON.parse(localStorage.getItem('chestspam_v1') || 'null'); if (x) LT = Object.assign(LT, x); } catch (e) {}
   const save = () => { try { localStorage.setItem('chestspam_v1', JSON.stringify(LT)); } catch (e) {} };
@@ -339,7 +340,7 @@ button,select{font:inherit;color:inherit}
   }
 
   function win() {
-    S.locked = true; holdEnd(H.src);
+    S.locked = true; holdCancel();
     const chest = $('chest');
     chest.classList.add('charging');
     [300, 340, 380, 420, 480, 560, 660, 780].forEach((f, i) => beep(f, 0.25, 'triangle', 0.04, i * 0.25));
@@ -459,7 +460,7 @@ button,select{font:inherit;color:inherit}
 
   // hold-to-open, like the real game: one chest at a time, ~1 second, roll happens only when the hold completes
   const HOLD_MS = 1000;
-  const H = { active: false, t0: 0, raf: 0, armed: true, src: '' };
+  const H = { active: false, t0: 0, raf: 0, armed: true, src: '', tap: false };
   function paintHold(p) {
     $('fill').style.width = (p * 100) + '%';
     $('lid').style.transform = p > 0 ? 'rotate(' + (-p * 26) + 'deg)' : '';
@@ -469,7 +470,7 @@ button,select{font:inherit;color:inherit}
   function holdStart(src, ev) {
     if (ev && ev.isTrusted === false) return;              // scripted/synthetic input does nothing
     if (S.locked || H.active || !H.armed || document.hidden) return;
-    H.active = true; H.armed = true; H.src = src; H.t0 = performance.now();
+    H.active = true; H.armed = true; H.src = src; H.tap = S.tapMode; H.t0 = performance.now();
     H.raf = requestAnimationFrame(holdTick);
   }
   function holdTick() {
@@ -477,7 +478,9 @@ button,select{font:inherit;color:inherit}
     const p = Math.min((performance.now() - H.t0) / HOLD_MS, 1);
     paintHold(p);
     if (p >= 1) {
-      H.active = false; H.armed = false;                   // must let go before the next chest
+      H.active = false;
+      if (H.tap) { H.armed = true; H.src = ''; }           // tap mode: next press starts the next chest
+      else H.armed = false;                                // hold mode: must let go before the next chest
       paintHold(0);
       act();
       return;
@@ -486,8 +489,20 @@ button,select{font:inherit;color:inherit}
   }
   function holdEnd(src) {
     if (H.src !== src) return;
+    if (H.tap && H.active) return;                         // tap mode: the opening carries on after you let go
     if (H.active) { H.active = false; cancelAnimationFrame(H.raf); paintHold(0); }   // let go early: nothing opens, nothing rolls
     H.armed = true; H.src = '';
+  }
+  function holdCancel() {
+    H.active = false; cancelAnimationFrame(H.raf); paintHold(0); H.armed = true; H.src = '';
+  }
+  function setTapMode(v, persist) {
+    S.tapMode = !!v;
+    $('mode').textContent = 'Opening: ' + (S.tapMode ? 'tap once' : 'hold');
+    $('mode').classList.toggle('on', S.tapMode);
+    $('open').querySelector('.lbl').textContent = S.tapMode ? 'Tap to open' : 'Hold to open';
+    $('open').querySelector('small').textContent = S.tapMode ? 'PRESS SPACE OR TAP · TAKES 1 SEC' : 'HOLD SPACE OR HOLD TAP · 1 SEC';
+    if (persist) { try { localStorage.setItem('chestspam_tap', S.tapMode ? '1' : '0'); } catch (e) {} }
   }
 
   // events
@@ -510,7 +525,8 @@ button,select{font:inherit;color:inherit}
   });
   document.addEventListener('keyup', e => { if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); holdEnd('key'); } });
   addEventListener('blur', () => holdEnd(H.src));
-  document.addEventListener('visibilitychange', () => { if (document.hidden) holdEnd(H.src); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) holdCancel(); });
+  $('mode').addEventListener('click', () => { if (!H.active) setTapMode(!S.tapMode, true); });
   $('mute').addEventListener('click', () => { muted = !muted; $('mute').textContent = 'Sound: ' + (muted ? 'off' : 'on'); });
   $('reset').addEventListener('click', resetRun);
   $('again').addEventListener('click', resetRun);
@@ -532,6 +548,7 @@ button,select{font:inherit;color:inherit}
   loadArt('chest-open', [$('chestOpenImg')], 'has-open-img');
   loadArt('token', Array.from(document.querySelectorAll('.timg')), 'has-token-img');
 
+  try { if (localStorage.getItem('chestspam_tap') === '1') setTapMode(true); } catch (e) {}
   buildHaul();
   render();
 })();
