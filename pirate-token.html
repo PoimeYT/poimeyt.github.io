@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chest Spam: Pirate Token Hunt</title>
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07131f; --bg2:#0c2236; --card:#10293f; --line:#1d4263;
+  --gold:#f5c542; --gold2:#ffdf7a; --teal:#38d6c4; --red:#ff5d6c; --text:#e8f1f8; --mute:#8fa8bd;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:Inter,system-ui,sans-serif; color:var(--text);
+  background:radial-gradient(1200px 600px at 50% -10%,#14405f 0%,var(--bg) 60%) fixed;
+  min-height:100vh; -webkit-tap-highlight-color:transparent;
+}
+main{max-width:880px;margin:0 auto;padding:20px 16px 40px}
+header{text-align:center;margin-bottom:14px}
+h1{font-family:"Pirata One",Georgia,serif;font-weight:400;font-size:clamp(38px,8vw,60px);margin:0;color:var(--gold);letter-spacing:1px;text-shadow:0 3px 0 #6b4a05,0 0 30px rgba(245,197,66,.25)}
+.sub{margin:4px 0 0;color:var(--mute);font-size:14px}
+.sub b{color:var(--gold2)}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute)}
+.stat .v{font-size:clamp(17px,3.6vw,24px);font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+.bar{height:10px;background:#0a1d2e;border:1px solid var(--line);border-radius:99px;overflow:hidden;margin:2px 0 4px}
+.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .15s}
+.barlabel{display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+
+.stage{position:relative;display:flex;flex-direction:column;align-items:center;margin:18px 0 6px;padding:10px 0 4px}
+#floaters{position:absolute;left:0;right:0;top:0;height:140px;pointer-events:none;overflow:visible}
+.floater{position:absolute;left:50%;top:110px;transform:translateX(-50%);white-space:nowrap;font-weight:800;font-size:15px;
+  padding:3px 10px;border-radius:99px;background:rgba(7,19,31,.85);border:1px solid var(--line);animation:rise 1s ease-out forwards}
+.floater.rare{color:var(--gold2);border-color:var(--gold)}
+@keyframes rise{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-90px)}}
+#chest{width:min(300px,70vw);height:auto;cursor:pointer;touch-action:manipulation;user-select:none;filter:drop-shadow(0 12px 18px rgba(0,0,0,.5))}
+#lid{transform-box:fill-box;transform-origin:0% 100%}
+#glow{opacity:0;transition:opacity .2s}
+#chest.charging #glow{opacity:1;animation:pulse .35s infinite alternate}
+#chest.charging{animation:shake .12s infinite}
+@keyframes pulse{from{transform:scale(.9)}to{transform:scale(1.15)}}
+#glow{transform-box:fill-box;transform-origin:center}
+@keyframes shake{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(-5px,2px) rotate(-2deg)}50%{transform:translate(5px,-2px) rotate(2deg)}75%{transform:translate(-4px,-2px) rotate(-1deg)}100%{transform:translate(4px,2px) rotate(1deg)}}
+
+button,select{font:inherit;color:inherit}
+.big{margin-top:8px;font-family:"Pirata One",Georgia,serif;font-size:30px;letter-spacing:1px;padding:10px 40px 12px;border-radius:14px;border:0;cursor:pointer;
+  color:#3a2600;background:linear-gradient(#ffe38a,var(--gold));box-shadow:0 5px 0 #8a5f06,0 10px 20px rgba(0,0,0,.4);transition:transform .05s,box-shadow .05s}
+.big:active{transform:translateY(4px);box-shadow:0 1px 0 #8a5f06}
+.big small{display:block;font-family:Inter,sans-serif;font-size:11px;letter-spacing:.1em;opacity:.7;margin-top:-4px}
+
+#chest{position:relative}
+#chest svg{width:100%;height:auto;display:block}
+.chestimg{display:none;width:100%;height:auto;pointer-events:none;-webkit-user-drag:none}
+.has-chest-img #chest svg{display:none}
+.has-chest-img #chest .chestimg.closed{display:block}
+.has-chest-img.has-open-img #chest.isopen .chestimg.closed{display:none}
+.has-chest-img.has-open-img #chest.isopen .chestimg.opened{display:block}
+.has-chest-img #chest.charging::before{content:'';position:absolute;inset:-20%;z-index:-1;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,230,140,.9),rgba(245,197,66,.35) 45%,transparent 70%);animation:pulse .35s infinite alternate}
+.tok img.timg{display:none;width:72px;height:72px;object-fit:contain;margin:0 auto;-webkit-user-drag:none}
+.has-token-img .tok img.timg{display:block}
+.has-token-img .tok svg{display:none}
+.big{position:relative;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.big .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(58,38,0,.28);pointer-events:none}
+.big .lbl,.big small{position:relative}
+#chest{touch-action:none}
+.controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:18px 0}
+.controls button,.controls select{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer;font-weight:600;font-size:14px}
+.controls button:hover{border-color:var(--teal)}
+.controls button.on{background:var(--teal);color:#032a26;border-color:var(--teal)}
+.controls label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mute)}
+.controls .sep{width:1px;background:var(--line);margin:0 4px}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.panel h2{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--mute)}
+#log{list-style:none;margin:0;padding:0;font-size:14px;min-height:150px}
+#log li{padding:5px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:10px}
+#log li:last-child{border:0}
+#log .n{color:var(--mute);font-variant-numeric:tabular-nums}
+#log .rare{color:var(--gold2);font-weight:800}
+#chart{width:100%;height:150px;display:block}
+.note{color:var(--mute);font-size:12px;line-height:1.5;margin-top:16px;text-align:center}
+
+.haul{margin-top:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:#0a1d2e;border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:13px}
+.chip b{font-variant-numeric:tabular-nums;margin-left:6px}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px}
+.item{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;border-radius:8px;background:#0a1d2e;border:1px solid var(--line);font-size:13px;color:var(--mute)}
+.item.got{color:var(--text);border-color:var(--gold)}
+.item .ct{font-weight:800;font-variant-numeric:tabular-nums}
+.overlay{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(3,10,17,.88);backdrop-filter:blur(4px)}
+.hidden{display:none}
+#confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.win{position:relative;max-width:520px;width:100%;text-align:center;background:linear-gradient(#143a58,#0b2236);border:2px solid var(--gold);border-radius:20px;padding:26px 20px;box-shadow:0 0 60px rgba(245,197,66,.35)}
+.win h2{font-family:"Pirata One",Georgia,serif;font-weight:400;font-size:clamp(30px,7vw,44px);margin:0;color:var(--gold);line-height:1}
+.tokens{display:flex;gap:12px;justify-content:center;margin:18px 0}
+.tok{flex:1;max-width:190px;background:#0a1d2e;border:1px solid var(--gold);border-radius:14px;padding:12px 8px;animation:pop .5s backwards}
+.tok:nth-child(2){animation-delay:.2s}
+@keyframes pop{from{transform:scale(.3) rotate(-10deg);opacity:0}to{transform:none;opacity:1}}
+.tok svg{width:72px;height:72px}
+.tok b{display:block;font-size:12px;letter-spacing:.06em;margin-top:6px}
+.tok span{color:var(--gold2);font-weight:800;font-size:20px}
+.win p{color:var(--text);margin:6px 0;font-size:15px}
+.win p em{color:var(--mute);font-style:normal;font-size:13px}
+.win button{margin-top:14px;background:var(--gold);color:#3a2600;border:0;border-radius:10px;padding:11px 22px;font-weight:800;cursor:pointer;font-size:15px}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Chest Spam</h1>
+    <p class="sub">free chests. no matches. hold to open, one second each, no shortcuts. one <b>1 in 137,000</b> shot at the pirate shop token.</p>
+  </header>
+
+  <section class="stats" aria-label="stats">
+    <div class="stat"><div class="k">Chests opened</div><div class="v" id="sOpened">0</div></div>
+    <div class="stat"><div class="k">Chance you'd have it by now</div><div class="v" id="sChance">0%</div></div>
+    <div class="stat"><div class="k">Time hunting</div><div class="v" id="sTime">0:00</div></div>
+    <div class="stat"><div class="k">All-time chests</div><div class="v" id="sLife">0</div></div>
+  </section>
+
+  <div class="bar"><i id="bar"></i></div>
+  <div class="barlabel"><span id="avgTxt">0.00x the average wait</span><span>average wait: 137,000 chests</span></div>
+
+  <section class="stage">
+    <div id="floaters"></div>
+    <div id="chest" role="button" aria-label="open chest"><img class="chestimg closed" id="chestImg" alt="" draggable="false"><img class="chestimg opened" id="chestOpenImg" alt="" draggable="false"><svg viewBox="0 0 240 200">
+      <defs>
+        <radialGradient id="g" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#fff6c2" stop-opacity="1"/>
+          <stop offset="0.5" stop-color="#f5c542" stop-opacity=".6"/>
+          <stop offset="1" stop-color="#f5c542" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#9a6329"/><stop offset="1" stop-color="#6d4017"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="120" cy="184" rx="100" ry="10" fill="#000" opacity=".35"/>
+      <circle id="glow" cx="120" cy="95" r="120" fill="url(#g)"/>
+      <rect x="30" y="95" width="180" height="82" rx="8" fill="url(#wood)" stroke="#3b220c" stroke-width="3"/>
+      <path d="M30 120H210M30 148H210" stroke="#3b220c" stroke-width="2" opacity=".5"/>
+      <rect x="30" y="95" width="180" height="8" fill="#1a0f05"/>
+      <rect x="48" y="95" width="18" height="82" fill="#f5c542" stroke="#8a5f06" stroke-width="2"/>
+      <rect x="174" y="95" width="18" height="82" fill="#f5c542" stroke="#8a5f06" stroke-width="2"/>
+      <g id="lid">
+        <path d="M30 95V72Q30 28 120 28Q210 28 210 72V95Z" fill="url(#wood)" stroke="#3b220c" stroke-width="3"/>
+        <path d="M30 72Q120 40 210 72" fill="none" stroke="#3b220c" stroke-width="2" opacity=".5"/>
+        <rect x="48" y="40" width="18" height="55" fill="#f5c542" stroke="#8a5f06" stroke-width="2"/>
+        <rect x="174" y="40" width="18" height="55" fill="#f5c542" stroke="#8a5f06" stroke-width="2"/>
+      </g>
+      <rect x="106" y="88" width="28" height="34" rx="5" fill="#ffd95a" stroke="#8a5f06" stroke-width="2.5"/>
+      <circle cx="120" cy="101" r="4.5" fill="#3a2600"/><rect x="118" y="103" width="4" height="10" fill="#3a2600"/>
+    </svg></div>
+    <button id="open" class="big"><i class="fill" id="fill"></i><span class="lbl">Hold to open</span><small>HOLD SPACE OR HOLD TAP · 1 SEC</small></button>
+  </section>
+
+  <section class="controls">
+    <button id="mute">Sound: on</button>
+    <button id="reset">Reset run</button>
+  </section>
+
+  <section class="grid">
+    <div class="panel"><h2>Recent loot</h2><ul id="log"><li><span>nothing yet. go open a chest.</span></li></ul></div>
+    <div class="panel"><h2>Odds curve</h2><canvas id="chart"></canvas>
+      <div class="barlabel"><span>0 chests</span><span>half of hunters find it by ~95,000</span></div></div>
+  </section>
+
+  <section class="panel haul">
+    <h2>Your haul this run</h2>
+    <div class="chips" id="chips"></div>
+    <h2 style="margin-top:16px">Treasure Hunters reward pool (weeks 1 and 2)</h2>
+    <div class="items" id="items"></div>
+  </section>
+
+  <p class="note">Fan-made parody with fake, free chests. Not affiliated with or endorsed by Epic Games.<br>
+  Every chest gives a weapon, a heal or shield item, materials and gold bars, like the real ones. Weapon and material odds are rough community numbers.<br>
+  Epic has never published the real Pirate Shop Access drop rate; estimates range from about 1 in 2,000 to 1 in 700,000. This game uses 1 in 137,000.<br>
+  Chests take about a second to open in the real game (you hold interact), so that is how long they take here. One chest at a time, no auto-open, no bulk opening.<br>
+  The 1% chance of a side reward per chest is a community estimate too, and the Solid Gold skins are treated as equally rare as the token.</p>
+</main>
+
+<div id="win" class="overlay hidden">
+  <canvas id="confetti"></canvas>
+  <div class="win">
+    <h2>YOU FOUND PIRATE SHOP ACCESS</h2>
+    <div class="tokens">
+      <div class="tok">
+        <img class="timg" alt="" draggable="false"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" fill="#f5c542" stroke="#8a5f06" stroke-width="4"/><circle cx="40" cy="40" r="28" fill="none" stroke="#8a5f06" stroke-width="2" stroke-dasharray="3 3"/><path d="M22 54L58 30M58 54L22 30" stroke="#5a3d05" stroke-width="5" stroke-linecap="round"/><ellipse cx="40" cy="38" rx="12" ry="11" fill="#fff6c2" stroke="#5a3d05" stroke-width="3"/><circle cx="35" cy="37" r="3" fill="#5a3d05"/><circle cx="45" cy="37" r="3" fill="#5a3d05"/><rect x="35" y="45" width="10" height="6" rx="2" fill="#fff6c2" stroke="#5a3d05" stroke-width="2"/></svg>
+        <b>PIRATE SHOP ACCESS</b><span>2026</span>
+      </div>
+      <div class="tok">
+        <img class="timg" alt="" draggable="false"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" fill="#f5c542" stroke="#8a5f06" stroke-width="4"/><circle cx="40" cy="40" r="28" fill="none" stroke="#8a5f06" stroke-width="2" stroke-dasharray="3 3"/><path d="M22 54L58 30M58 54L22 30" stroke="#5a3d05" stroke-width="5" stroke-linecap="round"/><ellipse cx="40" cy="38" rx="12" ry="11" fill="#fff6c2" stroke="#5a3d05" stroke-width="3"/><circle cx="35" cy="37" r="3" fill="#5a3d05"/><circle cx="45" cy="37" r="3" fill="#5a3d05"/><rect x="35" y="45" width="10" height="6" rx="2" fill="#fff6c2" stroke="#5a3d05" stroke-width="2"/></svg>
+        <b>PIRATE SHOP ACCESS</b><span>2027</span>
+      </div>
+    </div>
+    <p id="wChests"></p>
+    <p id="wLuck"></p>
+    <p><em id="wLife"></em></p>
+    <p><em>(fake token. sadly it does not unlock any real shop.)</em></p>
+    <button id="again">Keep hunting</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const ODDS = 137000, P = 1 / ODDS;
+  const $ = id => document.getElementById(id);
+  const fmt = n => Math.round(n).toLocaleString('en-US');
+
+  function newInv() { return { uncommon: 0, rare: 0, epic: 0, legendary: 0, bars: 0, wood: 0, stone: 0, metal: 0, items: {} }; }
+  const S = { inv: newInv(), opened: 0, t0: 0, locked: false, log: [] };
+  let LT = { chests: 0, wins: 0, best: null, worst: null };
+  try { const x = JSON.parse(localStorage.getItem('chestspam_v1') || 'null'); if (x) LT = Object.assign(LT, x); } catch (e) {}
+  const save = () => { try { localStorage.setItem('chestspam_v1', JSON.stringify(LT)); } catch (e) {} };
+
+  // random numbers, buffered
+  const buf = new Uint32Array(16384); let bi = buf.length;
+  const hasCrypto = !!(window.crypto && crypto.getRandomValues);
+  function rnd() {
+    if (!hasCrypto) return Math.random();
+    if (bi >= buf.length) { crypto.getRandomValues(buf); bi = 0; }
+    return buf[bi++] / 4294967296;
+  }
+
+  // loot tables, based on real Fortnite chest contents
+  // every chest: a weapon (uncommon or better), a consumable, one material type, bars
+  const RAR = [
+    { k: 'uncommon', w: 50, c: '#6fd24a' }, { k: 'rare', w: 32, c: '#4aa8ff' },
+    { k: 'epic', w: 15, c: '#b86bff' }, { k: 'legendary', w: 3, c: '#ffb02e' }];
+  const WEAPONS = [{ n: 'Assault rifle', w: 37 }, { n: 'Pump shotgun', w: 22 }, { n: 'SMG', w: 14 },
+    { n: 'Sniper rifle', w: 10 }, { n: 'Pistol', w: 8 }, { n: 'Revolver', w: 6 }, { n: 'Rocket launcher', w: 3 }];
+  const CONS = [{ n: 'Bandages', w: 30 }, { n: 'Small shield potion', w: 30 }, { n: 'Shield potion', w: 18 },
+    { n: 'Grenades', w: 14 }, { n: 'Med kit', w: 8 }];
+  // Treasure Hunters bonus rewards
+  const GOLD = [{ n: 'Solid Gold A$AP Rocky', t: 'Outfit' }, { n: "Solid Gold Lil' Uzi Vert", t: 'Outfit' }];
+  const POOL = [
+    { n: "A$AP Rocky's Gauntlets", t: 'Pickaxe' }, { n: 'No Trespassing', t: 'Jam Track' },
+    { n: 'Plunder in Paradise', t: 'Loading screen' }, { n: "Mercedes-AMG G 63 'G-Wagon'", t: 'Car' },
+    { n: 'Golden Llama Crew', t: 'Decal' }, { n: 'Gold G-Wagon', t: 'Wheels' },
+    { n: "Lil' Uzi Crew", t: 'Back bling' }, { n: 'Lucky Locator', t: 'Gizmo' }, { n: 'Portable Extractor', t: 'Gizmo' }];
+  const TOKENS = [{ n: 'Pirate Shop Access (2026)', t: 'Token' }, { n: 'Pirate Shop Access (2027)', t: 'Token' }];
+  const TREASURE_RATE = 0.01;
+  function pick(arr) {
+    let t = 0; for (const a of arr) t += a.w;
+    let r = rnd() * t;
+    for (const a of arr) { if ((r -= a.w) < 0) return a; }
+    return arr[arr.length - 1];
+  }
+
+  // audio
+  let actx = null, muted = false, lastTick = 0;
+  function beep(f, d, type, v, when) {
+    if (muted) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + (when || 0);
+      o.type = type || 'square'; o.frequency.value = f;
+      g.gain.setValueAtTime(v || 0.03, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + d);
+    } catch (e) {}
+  }
+
+  // core
+  function rollChest(detail) {
+    const r = rnd();
+    if (r < P) return { token: true };
+    const c = {};
+    const q = rnd() * 100; c.rar = q < 50 ? 0 : q < 82 ? 1 : q < 97 ? 2 : 3;
+    const m = rnd(); c.mat = m < 0.476 ? 'wood' : m < 0.833 ? 'stone' : 'metal';
+    c.matAmt = 30 + ((rnd() * 70) | 0);
+    c.bars = 5 + ((rnd() * 20) | 0);
+    if (r < P * 3) c.gold = r < P * 2 ? 0 : 1;
+    else if (rnd() < TREASURE_RATE) c.item = (rnd() * POOL.length) | 0;
+    if (detail) { c.wpn = pick(WEAPONS).n; c.cons = pick(CONS).n; }
+    return c;
+  }
+
+  function openOne() {
+    if (!S.t0) S.t0 = Date.now();
+    const c = rollChest(true), inv = S.inv;
+    S.opened++; LT.chests++;
+    if (c.token) return { found: true, shown: [] };
+    inv[RAR[c.rar].k]++; inv[c.mat] += c.matAmt; inv.bars += c.bars;
+    if (c.gold !== undefined) inv.items[GOLD[c.gold].n] = (inv.items[GOLD[c.gold].n] || 0) + 1;
+    if (c.item !== undefined) inv.items[POOL[c.item].n] = (inv.items[POOL[c.item].n] || 0) + 1;
+    return { found: false, shown: [c] };
+  }
+
+  function addLog(text, color, rare) {
+    S.log.unshift({ n: S.opened, text, color, rare });
+    if (S.log.length > 8) S.log.pop();
+  }
+
+  function floater(text, color, rare) {
+    const f = document.createElement('div');
+    f.className = 'floater' + (rare ? ' rare' : '');
+    f.textContent = text;
+    if (color) f.style.color = color;
+    f.style.marginLeft = (Math.random() * 120 - 60) + 'px';
+    $('floaters').appendChild(f);
+    setTimeout(() => f.remove(), 1000);
+  }
+
+  function lidFlap() {
+    $('lid').animate([{ transform: 'rotate(0)' }, { transform: 'rotate(-32deg)' }, { transform: 'rotate(0)' }], { duration: 170 });
+    const ci = $('chestImg');
+    if (ci.animate) ci.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.1) rotate(-2deg)' }, { transform: 'scale(1)' }], { duration: 190 });
+  }
+
+  function act() {
+    if (S.locked) return;
+    const r = openOne();
+    if (r.found) { win(); return; }
+    $('lid').style.transform = '';
+    lidFlap();
+    const ch = $('chest'); ch.classList.add('isopen'); setTimeout(() => ch.classList.remove('isopen'), 350);
+    let special = false;
+    r.shown.forEach(c => {
+      const R = RAR[c.rar];
+      const line = R.k[0].toUpperCase() + R.k.slice(1) + ' ' + c.wpn;
+      floater(line, R.c, false);
+      addLog(line + ' + ' + c.cons + ', ' + c.matAmt + ' ' + c.mat + ', ' + c.bars + ' bars', R.c, false);
+      if (c.gold !== undefined) { const g = GOLD[c.gold]; floater('★ ' + g.n, '#ffdf7a', true); addLog('★ ' + g.n + ' (' + g.t + ')', '#ffdf7a', true); special = true; }
+      if (c.item !== undefined) { const it = POOL[c.item]; floater('★ ' + it.n, '#ffdf7a', true); addLog('★ ' + it.n + ' (' + it.t + ')', '#ffdf7a', true); special = true; }
+    });
+    if (special) { beep(880, 0.12, 'triangle', 0.04); beep(1175, 0.18, 'triangle', 0.04, 0.1); }
+    else beep(380 + Math.random() * 120, 0.06);
+    render();
+  }
+
+  function win() {
+    S.locked = true; holdEnd(H.src);
+    const chest = $('chest');
+    chest.classList.add('charging');
+    [300, 340, 380, 420, 480, 560, 660, 780].forEach((f, i) => beep(f, 0.25, 'triangle', 0.04, i * 0.25));
+    render();
+    setTimeout(() => {
+      chest.classList.remove('charging'); chest.classList.add('isopen');
+      lidFlap();
+      TOKENS.forEach(t => { S.inv.items[t.n] = 1; });
+      LT.wins++;
+      LT.best = LT.best === null ? S.opened : Math.min(LT.best, S.opened);
+      LT.worst = LT.worst === null ? S.opened : Math.max(LT.worst, S.opened);
+      save();
+      const p = 1 - Math.pow(1 - P, S.opened);
+      $('wChests').innerHTML = 'It took <b>' + fmt(S.opened) + '</b> chests in <b>' + $('sTime').textContent + '</b>.';
+      $('wLuck').textContent = (S.opened / ODDS).toFixed(2) + 'x the average wait. ' + ((1 - p) * 100).toFixed(1) + '% of hunters would have taken longer.';
+      $('wLife').textContent = 'Your record: ' + fmt(LT.best) + ' chests (best), ' + fmt(LT.worst) + ' (worst), ' + LT.wins + ' token' + (LT.wins === 1 ? '' : 's') + ' total.';
+      $('win').classList.remove('hidden');
+      confetti();
+      [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => beep(f, 0.2, 'square', 0.04, i * 0.11));
+    }, 2300);
+  }
+
+  function resetRun() {
+    S.opened = 0; S.t0 = 0; S.locked = false; S.log = []; S.inv = newInv();
+    $('win').classList.add('hidden');
+    $('chest').classList.remove('charging', 'isopen');
+    render();
+  }
+
+  // ui
+  const fmtTime = ms => { const s = Math.floor(ms / 1000), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+    return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(r).padStart(2, '0'); };
+
+  function render() {
+    const chance = -Math.expm1(S.opened * Math.log1p(-P));
+    $('sOpened').textContent = fmt(S.opened);
+    $('sChance').textContent = (chance * 100).toFixed(chance < 0.1 ? 2 : 1) + '%';
+    $('sLife').textContent = fmt(LT.chests);
+    $('bar').style.width = (chance * 100) + '%';
+    $('avgTxt').textContent = (S.opened / ODDS).toFixed(2) + 'x the average wait';
+    $('sTime').textContent = fmtTime(S.t0 ? Date.now() - S.t0 : 0);
+    const ul = $('log');
+    ul.innerHTML = '';
+    if (!S.log.length) ul.innerHTML = '<li><span>nothing yet. go open a chest.</span></li>';
+    S.log.forEach(e => {
+      const li = document.createElement('li');
+      li.innerHTML = '<span class="' + (e.rare ? 'rare' : '') + '"></span><span class="n">#' + fmt(e.n) + '</span>';
+      li.firstChild.textContent = e.text;
+      if (e.color) li.firstChild.style.color = e.color;
+      ul.appendChild(li);
+    });
+    renderHaul();
+    drawChart(chance);
+  }
+
+  const CHIPS = [['legendary', 'Legendary weapons'], ['epic', 'Epic weapons'], ['rare', 'Rare weapons'], ['uncommon', 'Uncommon weapons'],
+    ['bars', 'Gold bars'], ['wood', 'Wood'], ['stone', 'Stone'], ['metal', 'Metal']];
+  function buildHaul() {
+    const chips = $('chips');
+    CHIPS.forEach(([k, label]) => {
+      const d = document.createElement('div'); d.className = 'chip'; d.dataset.k = k;
+      d.innerHTML = '<span></span><b>0</b>'; d.firstChild.textContent = label; chips.appendChild(d);
+    });
+    const items = $('items');
+    GOLD.concat(POOL, TOKENS).forEach(it => {
+      const d = document.createElement('div'); d.className = 'item'; d.dataset.n = it.n;
+      d.innerHTML = '<span></span><span class="ct">0</span>'; d.firstChild.textContent = it.n + ' · ' + it.t; items.appendChild(d);
+    });
+  }
+  function renderHaul() {
+    $('chips').childNodes.forEach(d => { d.lastChild.textContent = fmt(S.inv[d.dataset.k]); });
+    $('items').childNodes.forEach(d => {
+      const c = S.inv.items[d.dataset.n] || 0;
+      d.lastChild.textContent = c; d.classList.toggle('got', c > 0);
+    });
+  }
+
+  function drawChart(chance) {
+    const c = $('chart'), dpr = window.devicePixelRatio || 1;
+    const w = c.clientWidth, h = c.clientHeight;
+    if (c.width !== w * dpr) { c.width = w * dpr; c.height = h * dpr; }
+    const x = c.getContext('2d');
+    x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    x.clearRect(0, 0, w, h);
+    const maxN = ODDS * 4, pad = 6;
+    const X = n => pad + (n / maxN) * (w - pad * 2);
+    const Y = p => h - pad - p * (h - pad * 2);
+    x.strokeStyle = '#1d4263'; x.lineWidth = 1;
+    [0.5, 0.9].forEach(p => { x.beginPath(); x.moveTo(pad, Y(p)); x.lineTo(w - pad, Y(p)); x.stroke(); });
+    x.strokeStyle = '#38d6c4'; x.lineWidth = 2.5; x.beginPath();
+    for (let i = 0; i <= 120; i++) {
+      const n = (i / 120) * maxN, p = 1 - Math.exp(n * Math.log1p(-P));
+      i ? x.lineTo(X(n), Y(p)) : x.moveTo(X(n), Y(p));
+    }
+    x.stroke();
+    const n = Math.min(S.opened, maxN);
+    x.fillStyle = '#f5c542'; x.beginPath(); x.arc(X(n), Y(chance), 6, 0, 7); x.fill();
+    x.fillStyle = '#8fa8bd'; x.font = '11px Inter,sans-serif';
+    x.fillText('50%', w - 34, Y(0.5) - 4); x.fillText('90%', w - 34, Y(0.9) - 4);
+  }
+
+  // confetti
+  function confetti() {
+    const c = $('confetti'); c.width = innerWidth; c.height = innerHeight;
+    const x = c.getContext('2d'), cols = ['#f5c542', '#38d6c4', '#ff5d6c', '#fff6c2', '#6aa8ff'];
+    const ps = Array.from({ length: 160 }, () => ({ x: Math.random() * c.width, y: -20 - Math.random() * c.height * 0.5,
+      vx: Math.random() * 4 - 2, vy: 2 + Math.random() * 4, s: 4 + Math.random() * 6, r: Math.random() * 6, c: cols[(Math.random() * cols.length) | 0] }));
+    let t = 0;
+    (function step() {
+      x.clearRect(0, 0, c.width, c.height);
+      ps.forEach(p => { p.x += p.vx; p.y += p.vy; p.r += 0.1; x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.6); x.restore(); });
+      if (++t < 260 && !$('win').classList.contains('hidden')) requestAnimationFrame(step); else x.clearRect(0, 0, c.width, c.height);
+    })();
+  }
+
+  setInterval(() => { if (S.t0 && !S.locked) $('sTime').textContent = fmtTime(Date.now() - S.t0); }, 500);
+
+  // hold-to-open, like the real game: one chest at a time, ~1 second, roll happens only when the hold completes
+  const HOLD_MS = 1000;
+  const H = { active: false, t0: 0, raf: 0, armed: true, src: '' };
+  function paintHold(p) {
+    $('fill').style.width = (p * 100) + '%';
+    $('lid').style.transform = p > 0 ? 'rotate(' + (-p * 26) + 'deg)' : '';
+    $('chest').classList.toggle('isopen', p >= 0.6);
+    $('chestImg').style.transform = p > 0 ? 'scale(' + (1 + p * 0.07) + ')' : '';
+  }
+  function holdStart(src, ev) {
+    if (ev && ev.isTrusted === false) return;              // scripted/synthetic input does nothing
+    if (S.locked || H.active || !H.armed || document.hidden) return;
+    H.active = true; H.armed = true; H.src = src; H.t0 = performance.now();
+    H.raf = requestAnimationFrame(holdTick);
+  }
+  function holdTick() {
+    if (!H.active) return;
+    const p = Math.min((performance.now() - H.t0) / HOLD_MS, 1);
+    paintHold(p);
+    if (p >= 1) {
+      H.active = false; H.armed = false;                   // must let go before the next chest
+      paintHold(0);
+      act();
+      return;
+    }
+    H.raf = requestAnimationFrame(holdTick);
+  }
+  function holdEnd(src) {
+    if (H.src !== src) return;
+    if (H.active) { H.active = false; cancelAnimationFrame(H.raf); paintHold(0); }   // let go early: nothing opens, nothing rolls
+    H.armed = true; H.src = '';
+  }
+
+  // events
+  [$('open'), $('chest')].forEach(el => {
+    el.addEventListener('pointerdown', e => {
+      if (e.button > 0) return;
+      e.preventDefault();
+      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      holdStart('ptr', e);
+    });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => el.addEventListener(t, () => holdEnd('ptr')));
+    el.addEventListener('contextmenu', e => e.preventDefault());
+  });
+  document.addEventListener('keydown', e => {
+    const tag = (document.activeElement || {}).tagName || '';
+    if ((e.code === 'Space' || e.code === 'Enter') && tag !== 'SELECT' && $('win').classList.contains('hidden')) {
+      e.preventDefault();
+      if (!e.repeat) holdStart('key', e);                  // key auto-repeat can't re-trigger
+    }
+  });
+  document.addEventListener('keyup', e => { if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); holdEnd('key'); } });
+  addEventListener('blur', () => holdEnd(H.src));
+  document.addEventListener('visibilitychange', () => { if (document.hidden) holdEnd(H.src); });
+  $('mute').addEventListener('click', () => { muted = !muted; $('mute').textContent = 'Sound: ' + (muted ? 'off' : 'on'); });
+  $('reset').addEventListener('click', resetRun);
+  $('again').addEventListener('click', resetRun);
+  addEventListener('resize', () => render());
+
+  if (!hasCrypto) { $('open').disabled = true; $('open').querySelector('.lbl').textContent = 'Needs a modern browser'; }
+  // optional custom art: put chest.png, chest-open.png (optional) and token.png in this page's folder
+  function loadArt(base, targets, flag) {
+    const exts = ['png', 'webp', 'jpg', 'jpeg', 'svg'];
+    (function next(i) {
+      if (i >= exts.length) return;
+      const im = new Image();
+      im.onload = () => { targets.forEach(t => { t.src = im.src; }); document.documentElement.classList.add(flag); };
+      im.onerror = () => next(i + 1);
+      im.src = base + '.' + exts[i];
+    })(0);
+  }
+  loadArt('chest', [$('chestImg')], 'has-chest-img');
+  loadArt('chest-open', [$('chestOpenImg')], 'has-open-img');
+  loadArt('token', Array.from(document.querySelectorAll('.timg')), 'has-token-img');
+
+  buildHaul();
+  render();
+})();
+</script>
+</body>
+</html>
